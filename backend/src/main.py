@@ -5,10 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 from src.exceptions import TokenExpiredException, TokenNoFoundException
-from src.user.router import router as users_router
-from src.chat.router import router as chat_router
+from src.deposit.router import router as deposit_router
+from src.classifiers.router import router as classifier_router
 
-app = FastAPI(title='Messanger')
+app = FastAPI(title='Gas_enterprise')
 PORT = 9000
 HOST = "0.0.0.0"
 
@@ -20,8 +20,8 @@ app.add_middleware(
     allow_headers=["*"],  
 )
 
-app.include_router(users_router)
-app.include_router(chat_router)
+app.include_router(deposit_router)
+app.include_router(classifier_router)
 
 
 @app.exception_handler(TokenExpiredException)

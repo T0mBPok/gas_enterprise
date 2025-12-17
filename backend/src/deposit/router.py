@@ -1,45 +1,34 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from fastapi import APIRouter, Depends, Path
+from src.deposit.logic import DepositLogic
+from src.deposit.schemas import GetDeposit, AddDeposit, UpdateDeposit
+from src.deposit.rb import RBDeposit
 
-from src.page.schemas import PageCreate, PageUpdate, PageOut
-from src.page.dao import PageDAO
-from src.user.dependencies import get_current_user
+router = APIRouter(prefix="/deposit", tags=["Месторождения"])
 
-router = APIRouter(prefix='/page', tags=['Page'])
 
-@router.post("/", response_model=PageOut)
-async def create_page(page_data: PageCreate, user: str = Depends(get_current_user)):
-    page = await PageDAO.add(**page_data.model_dump(), user_id=user.id)
-    return page
+@router.get("/", summary="Получить список месторождений", response_model=list[GetDeposit])
+async def get_deposits(filters: RBDeposit = Depends()):
+    return await DepositLogic.get_all_deposits(**filters.to_dict())
 
-@router.get("/{page_id}/", response_model=PageOut)
-async def get_page(page_id: int, user: str = Depends(get_current_user)):
-    page = await PageDAO.get_one_or_none(id=page_id, user_id=user.id)
-    if not page:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
-    return page
 
-@router.get("/", response_model=List[PageOut])
-async def get_all_pages(user: str = Depends(get_current_user)):
-    pages = await PageDAO.get(user_id=user.id)
-    return pages
+@router.get("/{id}", summary="Получить месторождение по id", response_model=GetDeposit)
+async def get_deposit_by_id(id: int = Path(..., gt=0)):
+    return await DepositLogic.get_depost_by_id(id=id)
 
-@router.put("/{page_id}/", response_model=PageOut)
-async def update_page(page_id: int, page_data: PageUpdate, user: str = Depends(get_current_user)):
-    update_data = page_data.model_dump(exclude_unset=True)
-    if 'elements' in update_data:
-        update_data['elements'] = [e.model_dump() for e in update_data['elements']]
-    
-    updated_count = await PageDAO.update(id=page_id, **update_data)
-    if not updated_count:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found or no changes")
-    
-    page = await PageDAO.get_one_or_none(id=page_id)
-    return page
 
-@router.delete("/{page_id}/")
-async def delete_page(page_id: int, user: str = Depends(get_current_user)):
-    deleted_count = await PageDAO.delete(id=page_id)
-    if not deleted_count:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
-    return {"ok": True, "message": "Page successfully deleted"}
+@router.post("/", summary="Добавить месторождение", response_model=AddDeposit)
+async def add_deposit(form_data: AddDeposit = Depends()):
+    return await DepositLogic.add(**form_data.model_dump())
+
+
+@router.delete("/{id}", summary="Удалить месторождение")
+async def delete_deposit(id: int = Path(..., gt=0)):
+    await DepositLogic.delete(id=id)
+    return {"message": f"Месторождение с id={id} удалено"}
+
+
+@router.put("/{id}", summary="Обновить месторождение", response_model=UpdateDeposit)
+async def update_deposit(deposit: UpdateDeposit, id: int = Path(..., gt=0)):
+    values = deposit.model_dump(exclude_unset=True)
+    await DepositLogic.update_deposit(id=id, **values)
+    return values

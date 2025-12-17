@@ -35,3 +35,36 @@ def generate_layers(model_params):
         })
 
     return layers_data
+
+model_params = {
+    "domain": {
+        "x_min": 0,
+        "x_max": 1000,
+        "y_min": 0,
+        "y_max": 1000,
+        "nx": 200,
+        "ny": 200
+    },
+    "layers": [
+        {
+            "top_depth": -50,
+            "thickness": 30,
+            "amplitude": 10,
+            "frequency_x": 150,
+            "frequency_y": 200,
+            "layer_type": "gas",
+            "color": "orange",
+            "opacity": 0.7
+        },
+        {
+            "top_depth": -100,
+            "thickness": 40,
+            "amplitude": 8,
+            "frequency_x": 180,
+            "frequency_y": 170,
+            "layer_type": "water",
+            "color": "blue",
+            "opacity": 0.6
+        }
+    ]
+}

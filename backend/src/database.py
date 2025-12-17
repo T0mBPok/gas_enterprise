@@ -21,4 +21,7 @@ class Base(DeclarativeBase, AsyncAttrs):
     
     @declared_attr.directive
     def __tablename__(cls) -> str:
-        return f"{cls.__name__.lower()}s"
+        name = cls.__name__.lower()
+        if name.endswith("s"):
+            return f"{name}es"
+        return f"{name}s"

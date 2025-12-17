@@ -8,6 +8,17 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from src.database import Base, DATABASE_URL
+from src.Model3d.models import Model3D
+from src.classifiers.models import *
+from src.customer.models import Customer
+from src.delievery.models import Delivery
+from src.deposit.models import Deposit
+from src.enterprise.models import Enterprise
+from src.order.models import Order
+from src.prodMetrics.models import ProdMetrics
+from src.productionProcess.models import ProductionProcess
+from src.user.models import User
+from src.well.models import Well
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
