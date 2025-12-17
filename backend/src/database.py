@@ -18,10 +18,28 @@ str_uniq = Annotated[str, mapped_column(unique=True, nullable=False)]
 
 class Base(DeclarativeBase, AsyncAttrs):
     __abstract__ = True
-    
+
     @declared_attr.directive
     def __tablename__(cls) -> str:
         name = cls.__name__.lower()
-        if name.endswith("s"):
+
+        # y → ies
+        if name.endswith("y") and not name.endswith(("ay", "ey", "iy", "oy", "uy")):
+            return f"{name[:-1]}ies"
+
+        # f → ves
+        if name.endswith("fe"):
+            return f"{name[:-2]}ves"
+        if name.endswith("f"):
+            return f"{name[:-1]}ves"
+
+        # o → oes
+        if name.endswith("o"):
             return f"{name}es"
+
+        # s, x, z, ch, sh → es
+        if name.endswith(("s", "x", "z", "ch", "sh")):
+            return f"{name}es"
+
+        # по умолчанию добавляем s
         return f"{name}s"

@@ -1,14 +1,14 @@
 from sqlalchemy import select, exists
 from fastapi import HTTPException, status
 from src.database import with_session
-from src.customer.dao import CustomerDAO
+from src.delivery.dao import DeliveryDAO
 
 
-class CustomerLogic(CustomerDAO):
+class DeliveryLogic(DeliveryDAO):
 
     @classmethod
     @with_session
-    async def update_customer(cls, session, id: int, **values):
+    async def update_delivery(cls, session, id: int, **values):
         if not values:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -16,27 +16,27 @@ class CustomerLogic(CustomerDAO):
             )
 
         stmt = select(exists().where(cls.model.id == id))
-        customer_exists = await session.scalar(stmt)
+        delivery_exists = await session.scalar(stmt)
 
-        if not customer_exists:
+        if not delivery_exists:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Клиент не найден"
+                detail="Доставка не найдена"
             )
 
         return await cls.update(id=id, **values)
 
     @classmethod
-    async def get_customer_by_id(cls, id: int):
-        customer = await cls.get_one_by_id(id, "country", "city", "street", "house")
-        if not customer:
+    async def get_delivery_by_id(cls, id: int):
+        delivery = await cls.get_one_by_id(id, "order", "status", "transport", "enterprise")
+        if not delivery:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Клиент не найден"
+                detail="Доставка не найдена"
             )
-        return customer
+        return delivery
 
     @classmethod
-    async def get_all_customers(cls, **filter_by):
-        classifiers = ["country", "city", "street", "house"]
+    async def get_all_deliveries(cls, **filter_by):
+        classifiers = ["order", "status", "transport", "enterprise"]
         return await cls.get_all(*classifiers, **filter_by)

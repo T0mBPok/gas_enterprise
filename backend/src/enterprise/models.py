@@ -3,7 +3,7 @@ from sqlalchemy import ForeignKey
 from src.database import Base
 from src.well.models import Well
 from src.user.models import User
-from src.delievery.models import Delivery
+from src.delivery.models import Delivery
 
 class Enterprise(Base):
     id: Mapped[int] = mapped_column(primary_key=True)

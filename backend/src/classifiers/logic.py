@@ -9,7 +9,6 @@ class ClassifierLogic(ClassifierDAO):
     @classmethod
     @with_session
     async def create(cls, session, **values):
-        # Проверка уникальности code
         stmt = select(exists().where(cls.model.code == values["code"]))
         exists_code = await session.scalar(stmt)
 

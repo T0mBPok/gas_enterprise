@@ -6,20 +6,7 @@ from .schemas import (
 )
 from .logic import ClassifierLogic
 
-from .models import (
-    Region,
-    EnterpriseStatus,
-    EnterpriseType,
-    DepositStatus,
-    WellStatus,
-    ProcessType,
-    ProcessStatus,
-    Transport,
-    DeliveryStatus,
-    OrderStatus,
-    Position,
-    Qualification,
-)
+from .models import *
 
 router = APIRouter(prefix="/classifiers", tags=["Классификаторы"])
 
@@ -36,6 +23,10 @@ MODEL_MAP = {
     "order-statuses": OrderStatus,
     "positions": Position,
     "qualifications": Qualification,
+    "countries": Country,
+    "cities": City,
+    "streets": Street,
+    "houses": House,
 }
 
 @router.post("/{classifier}", summary="Добавить запись в классификатор", response_model=ClassifierRead)

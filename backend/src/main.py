@@ -7,6 +7,8 @@ import uvicorn
 from src.exceptions import TokenExpiredException, TokenNoFoundException
 from src.deposit.router import router as deposit_router
 from src.classifiers.router import router as classifier_router
+from src.delivery.router import router as delivey_router
+from src.customer.router import router as customer_router
 
 app = FastAPI(title='Gas_enterprise')
 PORT = 9000
@@ -20,8 +22,10 @@ app.add_middleware(
     allow_headers=["*"],  
 )
 
-app.include_router(deposit_router)
 app.include_router(classifier_router)
+app.include_router(deposit_router)
+app.include_router(customer_router)
+app.include_router(delivey_router)
 
 
 @app.exception_handler(TokenExpiredException)

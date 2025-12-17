@@ -8,6 +8,32 @@ class Region(Base):
     name: Mapped[str]
     description: Mapped[str | None]
 
+class Country(Base):
+    id: Mapped[int_pk]
+    code: Mapped[str]
+    name: Mapped[str]
+    description: Mapped[str | None]
+
+
+class City(Base):
+    id: Mapped[int_pk]
+    code: Mapped[str]
+    name: Mapped[str]
+    description: Mapped[str | None]
+
+
+class Street(Base):
+    id: Mapped[int_pk]
+    code: Mapped[str]
+    name: Mapped[str]
+    description: Mapped[str | None]
+
+
+class House(Base):
+    id: Mapped[int_pk]
+    code: Mapped[str]
+    name: Mapped[str]
+    description: Mapped[str | None]
 
 class EnterpriseStatus(Base):
     id: Mapped[int_pk]
