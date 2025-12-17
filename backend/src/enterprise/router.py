@@ -1,45 +1,34 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from fastapi import APIRouter, Depends, Path
+from src.enterprise.logic import EnterpriseLogic
+from src.enterprise.rb import RBEnterprise
+from src.enterprise.schemas import GetEnterprise, AddEnterprise, UpdateEnterprise
 
-from src.page.schemas import PageCreate, PageUpdate, PageOut
-from src.page.dao import PageDAO
-from src.user.dependencies import get_current_user
+router = APIRouter(prefix="/enterprise", tags=["Предприятия"])
 
-router = APIRouter(prefix='/page', tags=['Page'])
 
-@router.post("/", response_model=PageOut)
-async def create_page(page_data: PageCreate, user: str = Depends(get_current_user)):
-    page = await PageDAO.add(**page_data.model_dump(), user_id=user.id)
-    return page
+@router.get("/", summary="Получить список предприятий", response_model=list[GetEnterprise])
+async def get_enterprises(filters: RBEnterprise = Depends()):
+    return await EnterpriseLogic.get_all_enterprises(**filters.to_dict())
 
-@router.get("/{page_id}/", response_model=PageOut)
-async def get_page(page_id: int, user: str = Depends(get_current_user)):
-    page = await PageDAO.get_one_or_none(id=page_id, user_id=user.id)
-    if not page:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
-    return page
 
-@router.get("/", response_model=List[PageOut])
-async def get_all_pages(user: str = Depends(get_current_user)):
-    pages = await PageDAO.get(user_id=user.id)
-    return pages
+@router.get("/{id}", summary="Получить предприятие по id", response_model=GetEnterprise)
+async def get_enterprise_by_id(id: int = Path(..., gt=0)):
+    return await EnterpriseLogic.get_enterprise_by_id(id=id)
 
-@router.put("/{page_id}/", response_model=PageOut)
-async def update_page(page_id: int, page_data: PageUpdate, user: str = Depends(get_current_user)):
-    update_data = page_data.model_dump(exclude_unset=True)
-    if 'elements' in update_data:
-        update_data['elements'] = [e.model_dump() for e in update_data['elements']]
-    
-    updated_count = await PageDAO.update(id=page_id, **update_data)
-    if not updated_count:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found or no changes")
-    
-    page = await PageDAO.get_one_or_none(id=page_id)
-    return page
 
-@router.delete("/{page_id}/")
-async def delete_page(page_id: int, user: str = Depends(get_current_user)):
-    deleted_count = await PageDAO.delete(id=page_id)
-    if not deleted_count:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
-    return {"ok": True, "message": "Page successfully deleted"}
+@router.post("/", summary="Добавить предприятие", response_model=AddEnterprise)
+async def add_enterprise(form_data: AddEnterprise = Depends()):
+    return await EnterpriseLogic.add(**form_data.model_dump())
+
+
+@router.delete("/{id}", summary="Удалить предприятие")
+async def delete_enterprise(id: int = Path(..., gt=0)):
+    await EnterpriseLogic.delete(id=id)
+    return {"message": f"Предприятие с id={id} удалено"}
+
+
+@router.put("/{id}", summary="Обновить предприятие", response_model=UpdateEnterprise)
+async def update_enterprise(enterprise: UpdateEnterprise, id: int = Path(..., gt=0)):
+    values = enterprise.model_dump(exclude_unset=True)
+    await EnterpriseLogic.update_enterprise(id=id, **values)
+    return values
