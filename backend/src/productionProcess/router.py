@@ -1,45 +1,34 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from fastapi import APIRouter, Depends, Path
+from src.productionProcess.logic import ProductionProcessLogic
+from src.productionProcess.rb import RBProductionProcess
+from src.productionProcess.schemas import GetProductionProcess, AddProductionProcess, UpdateProductionProcess
 
-from src.page.schemas import PageCreate, PageUpdate, PageOut
-from src.page.dao import PageDAO
-from src.user.dependencies import get_current_user
 
-router = APIRouter(prefix='/page', tags=['Page'])
+router = APIRouter(prefix="/process", tags=["Производственные процессы"])
 
-@router.post("/", response_model=PageOut)
-async def create_page(page_data: PageCreate, user: str = Depends(get_current_user)):
-    page = await PageDAO.add(**page_data.model_dump(), user_id=user.id)
-    return page
+@router.get("/", summary="Получить список процессов", response_model=list[GetProductionProcess])
+async def get_processes(filters: RBProductionProcess = Depends()):
+    return await ProductionProcessLogic.get_all_processes(**filters.to_dict())
 
-@router.get("/{page_id}/", response_model=PageOut)
-async def get_page(page_id: int, user: str = Depends(get_current_user)):
-    page = await PageDAO.get_one_or_none(id=page_id, user_id=user.id)
-    if not page:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
-    return page
 
-@router.get("/", response_model=List[PageOut])
-async def get_all_pages(user: str = Depends(get_current_user)):
-    pages = await PageDAO.get(user_id=user.id)
-    return pages
+@router.get("/{id}", summary="Получить процесс по id", response_model=GetProductionProcess)
+async def get_process_by_id(id: int = Path(..., gt=0)):
+    return await ProductionProcessLogic.get_process_by_id(id=id)
 
-@router.put("/{page_id}/", response_model=PageOut)
-async def update_page(page_id: int, page_data: PageUpdate, user: str = Depends(get_current_user)):
-    update_data = page_data.model_dump(exclude_unset=True)
-    if 'elements' in update_data:
-        update_data['elements'] = [e.model_dump() for e in update_data['elements']]
-    
-    updated_count = await PageDAO.update(id=page_id, **update_data)
-    if not updated_count:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found or no changes")
-    
-    page = await PageDAO.get_one_or_none(id=page_id)
-    return page
 
-@router.delete("/{page_id}/")
-async def delete_page(page_id: int, user: str = Depends(get_current_user)):
-    deleted_count = await PageDAO.delete(id=page_id)
-    if not deleted_count:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
-    return {"ok": True, "message": "Page successfully deleted"}
+@router.post("/", summary="Добавить процесс", response_model=AddProductionProcess)
+async def add_process(form_data: AddProductionProcess = Depends()):
+    return await ProductionProcessLogic.add(**form_data.model_dump())
+
+
+@router.delete("/{id}", summary="Удалить процесс")
+async def delete_process(id: int = Path(..., gt=0)):
+    await ProductionProcessLogic.delete(id=id)
+    return {"message": f"Процесс с id={id} удален"}
+
+
+@router.put("/{id}", summary="Обновить процесс", response_model=UpdateProductionProcess)
+async def update_process(process: UpdateProductionProcess, id: int = Path(..., gt=0)):
+    values = process.model_dump(exclude_unset=True)
+    await ProductionProcessLogic.update_process(id=id, **values)
+    return values
