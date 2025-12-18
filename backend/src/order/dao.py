@@ -1,71 +1,40 @@
 from src.dao.base import BaseDAO
-from src.page.models import Page
-from src.database import with_session
-from fastapi import HTTPException, status
-from sqlalchemy.exc import SQLAlchemyError
-from src.qr.models import QR
-from sqlalchemy import select, update
+from src.order.models import Order
+from src.customer.dao import CustomerDAO
+from src.delivery.dao import DeliveryDAO
 
-class PageDAO(BaseDAO):
-    model = Page
-    
+
+class OrderDAO(BaseDAO):
+    model = Order
+
     @classmethod
-    @with_session
-    async def add(cls, session, user_id: int, name: str, background: dict, elements: list, qr_id: int | None = None):
-        existing = await session.execute(select(cls.model).filter_by(name=name))
-        if existing.scalar_one_or_none():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Page with name '{name}' already exists"
-            )
+    async def get_one_with_relations(cls, id: int):
+        order = await cls.get_one_by_id(id, "status")
 
-        page = cls.model(
-            user_id=user_id,
-            qr_id=qr_id,
-            name=name,
-            background=background,
-            elements=elements
-        )
-        session.add(page)
-        await session.flush()
+        if order:
+            # deliveries = await DeliveryDAO.get_all_with_relations(order_id=order.id)
+            # order.deliveries = deliveries
 
-        if qr_id:
-            qr = await session.get(QR, qr_id)
-            if not qr:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="QR not found")
-            qr.link = f"https://##/pages/{name}"
-            session.add(qr)
+            if order.customer_id:
+                customer = await CustomerDAO.get_one_by_id(
+                    order.customer_id, "country", "city", "street", "house"
+                )
+                order.customer = customer
 
-        try:
-            await session.commit()
-            await session.refresh(page)
-        except SQLAlchemyError as e:
-            await session.rollback()
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-        return page
-    
+        return order
+
     @classmethod
-    @with_session
-    async def update(cls, session, id: int, **values):
-        qr_id = values.get('qr_id')
-        name = values.get('name')
-        
-        if qr_id is not None or name is not None:
-            page = await session.get(cls.model, id)
-            if not page:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
-            
-            if qr_id is not None:
-                qr = await session.get(QR, qr_id)
-                if not qr:
-                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="QR not found")
-                qr.link = f"https://##/pages/{name or page.name}"
-                session.add(qr)
+    async def get_all_with_relations(cls, **filter_by):
+        orders = await cls.get_all("status", **filter_by)
 
-        result = await session.execute(update(cls.model).where(cls.model.id == id).values(**values))
-        try:
-            await session.commit()
-        except SQLAlchemyError:
-            await session.rollback()
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-        return result.rowcount
+        for o in orders:
+            # deliveries = await DeliveryDAO.get_all_with_relations(order_id=o.id)
+            # o.deliveries = deliveries
+
+            if o.customer_id:
+                customer = await CustomerDAO.get_one_by_id(
+                    o.customer_id, "country", "city", "street", "house"
+                )
+                o.customer = customer
+
+        return orders

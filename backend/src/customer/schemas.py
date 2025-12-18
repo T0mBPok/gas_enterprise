@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from datetime import datetime
 from src.classifiers.schemas import ClassifierRead
 
 
@@ -7,7 +8,7 @@ class GetCustomer(BaseModel):
     name: str
     phone_num: str
     contact_info: str
-    created_at: str
+    created_at: datetime
     country: ClassifierRead
     city: ClassifierRead
     street: ClassifierRead

@@ -15,7 +15,7 @@ class Delivery(Base):
     status_id: Mapped[int] = mapped_column(ForeignKey("deliverystatuses.id"))
     enterprise_id: Mapped[int] = mapped_column(ForeignKey("enterprises.id"))
 
-    enterprise = relationship("Enterprise", back_populates="deliveries")
+    enterprise: Mapped["Enterprise"] = relationship("Enterprise", back_populates="deliveries")
     order: Mapped["Order"] = relationship("Order", back_populates="deliveries")
     status: Mapped["DeliveryStatus"] = relationship("DeliveryStatus")
     transport: Mapped["Transport"] = relationship("Transport")

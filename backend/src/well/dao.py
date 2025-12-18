@@ -12,7 +12,7 @@ class WellDAO(BaseDAO):
             id, "status"
         )
         if well and well.enterprise_id:
-            enterprise = await EnterpriseDAO.get_one_with_deposit(w.enterprise_id)
+            enterprise = await EnterpriseDAO.get_one_with_deposit(well.enterprise_id)
             well.enterprise = enterprise
         return well
 

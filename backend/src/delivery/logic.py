@@ -5,7 +5,6 @@ from src.delivery.dao import DeliveryDAO
 
 
 class DeliveryLogic(DeliveryDAO):
-
     @classmethod
     @with_session
     async def update_delivery(cls, session, id: int, **values):
@@ -28,7 +27,7 @@ class DeliveryLogic(DeliveryDAO):
 
     @classmethod
     async def get_delivery_by_id(cls, id: int):
-        delivery = await cls.get_one_by_id(id, "order", "status", "transport", "enterprise")
+        delivery = await cls.get_one_with_relations(id)
         if not delivery:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -38,5 +37,4 @@ class DeliveryLogic(DeliveryDAO):
 
     @classmethod
     async def get_all_deliveries(cls, **filter_by):
-        classifiers = ["order", "status", "transport", "enterprise"]
-        return await cls.get_all(*classifiers, **filter_by)
+        return await cls.get_all_with_relations(**filter_by)

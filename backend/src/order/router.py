@@ -1,45 +1,34 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from fastapi import APIRouter, Depends, Path
+from src.order.logic import OrderLogic
+from src.order.rb import RBOrder
+from src.order.schemas import GetOrder, AddOrder, UpdateOrder
 
-from src.page.schemas import PageCreate, PageUpdate, PageOut
-from src.page.dao import PageDAO
-from src.user.dependencies import get_current_user
+router = APIRouter(prefix="/order", tags=["Заказы"])
 
-router = APIRouter(prefix='/page', tags=['Page'])
 
-@router.post("/", response_model=PageOut)
-async def create_page(page_data: PageCreate, user: str = Depends(get_current_user)):
-    page = await PageDAO.add(**page_data.model_dump(), user_id=user.id)
-    return page
+@router.get("/", response_model=list[GetOrder])
+async def get_orders(filters: RBOrder = Depends()):
+    return await OrderLogic.get_all_orders(**filters.to_dict())
 
-@router.get("/{page_id}/", response_model=PageOut)
-async def get_page(page_id: int, user: str = Depends(get_current_user)):
-    page = await PageDAO.get_one_or_none(id=page_id, user_id=user.id)
-    if not page:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
-    return page
 
-@router.get("/", response_model=List[PageOut])
-async def get_all_pages(user: str = Depends(get_current_user)):
-    pages = await PageDAO.get(user_id=user.id)
-    return pages
+@router.get("/{id}", response_model=GetOrder)
+async def get_order_by_id(id: int = Path(..., gt=0)):
+    return await OrderLogic.get_order_by_id(id=id)
 
-@router.put("/{page_id}/", response_model=PageOut)
-async def update_page(page_id: int, page_data: PageUpdate, user: str = Depends(get_current_user)):
-    update_data = page_data.model_dump(exclude_unset=True)
-    if 'elements' in update_data:
-        update_data['elements'] = [e.model_dump() for e in update_data['elements']]
-    
-    updated_count = await PageDAO.update(id=page_id, **update_data)
-    if not updated_count:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found or no changes")
-    
-    page = await PageDAO.get_one_or_none(id=page_id)
-    return page
 
-@router.delete("/{page_id}/")
-async def delete_page(page_id: int, user: str = Depends(get_current_user)):
-    deleted_count = await PageDAO.delete(id=page_id)
-    if not deleted_count:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Page not found")
-    return {"ok": True, "message": "Page successfully deleted"}
+@router.post("/", response_model=AddOrder)
+async def add_order(form: AddOrder = Depends()):
+    return await OrderLogic.add(**form.model_dump())
+
+
+@router.delete("/{id}")
+async def delete_order(id: int = Path(..., gt=0)):
+    await OrderLogic.delete(id=id)
+    return {"message": f"Заказ с id={id} удален"}
+
+
+@router.put("/{id}", response_model=UpdateOrder)
+async def update_order(order: UpdateOrder, id: int = Path(..., gt=0)):
+    values = order.model_dump(exclude_unset=True)
+    await OrderLogic.update_order(id=id, **values)
+    return values

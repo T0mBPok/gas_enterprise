@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Path
 from src.delivery.logic import DeliveryLogic
-from src.delivery.schemas import GetDelivery, AddDelivery, UpdateDelivery
 from src.delivery.rb import RBDelivery
+from src.delivery.schemas import GetDelivery, AddDelivery, UpdateDelivery
 
 router = APIRouter(prefix="/delivery", tags=["Доставки"])
 
