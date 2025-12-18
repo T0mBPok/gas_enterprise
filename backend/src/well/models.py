@@ -1,6 +1,5 @@
-from sqlalchemy import Date, ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import date
 from src.database import Base
 from src.Model3d.models import Model3D
 from src.prodMetrics.models import ProdMetrics
@@ -9,7 +8,6 @@ from src.classifiers.models import WellStatus
 class Well(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     number: Mapped[str]
-    creation_date: Mapped[date]
     depth: Mapped[float]
 
     enterprise_id: Mapped[int] = mapped_column(ForeignKey("enterprises.id"))

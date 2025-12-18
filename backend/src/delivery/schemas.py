@@ -12,6 +12,7 @@ class GetDelivery(BaseModel):
     transport: ClassifierRead
     status: ClassifierRead
     enterprise_id: int
+    created_at: str
 
 
 class AddDelivery(BaseModel):

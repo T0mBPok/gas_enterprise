@@ -7,6 +7,7 @@ class GetCustomer(BaseModel):
     name: str
     phone_num: str
     contact_info: str
+    created_at: str
     country: ClassifierRead
     city: ClassifierRead
     street: ClassifierRead

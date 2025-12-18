@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from src.classifiers.schemas import ClassifierRead
 from src.deposit.schemas import GetDeposit
+from datetime import datetime
 
 
 class GetEnterprise(BaseModel):
@@ -14,6 +15,7 @@ class GetEnterprise(BaseModel):
     city: ClassifierRead
     street: ClassifierRead
     house: ClassifierRead
+    created_at: datetime
 
 
 class AddEnterprise(BaseModel):

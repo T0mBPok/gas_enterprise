@@ -7,6 +7,8 @@ from fastapi import HTTPException, status
 
 class BaseDAO:
     model = None
+    
+    default_relations = []
 
     @classmethod
     @with_session
@@ -74,6 +76,10 @@ class BaseDAO:
             else:
                 attr = rel
             query = query.options(selectinload(attr))
+            
+        # for rel in getattr(cls, "default_relations", []):
+        #     query = query.options(selectinload(getattr(cls.model, rel)))
+            
         return query
 
 

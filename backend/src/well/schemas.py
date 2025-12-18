@@ -1,89 +1,43 @@
-from pydantic import BaseModel, HttpUrl, Field
-from typing import Literal, Union, Optional, List
+from pydantic import BaseModel, Field
+from datetime import date
+from src.classifiers.schemas import ClassifierRead
+from src.enterprise.schemas import GetEnterprise
+from datetime import datetime
 
-class BaseElement(BaseModel):
+
+class GetWell(BaseModel):
     id: int
-    x: float
-    y: float
-    z_index: int = 0
-    type: str
+    number: str
+    depth: float
+    enterprise: GetEnterprise
+    status: ClassifierRead
+    created_at: datetime
 
-# --- Типы элементов ---
-class RectangleElement(BaseElement):
-    type: Literal["rectangle"]
-    width: float
-    height: float
-    fill_color: Optional[str] = None
-    stroke_color: Optional[str] = None
-    stroke_width: Optional[float] = 0
-    
-class EllipseElement(BaseElement):
-    type: Literal["ellipse"]
-    width: float
-    height: float
-    fill_color: Optional[str] = "#ffffff"
-    stroke_color: Optional[str] = None
-    stroke_width: Optional[float] = 0
-    
-class LineElement(BaseElement):
-    type: Literal["line"]
-    x2: float
-    y2: float
-    stroke_color: Optional[str] = "#000000"
-    stroke_width: Optional[float] = 1
 
-class TextElement(BaseElement):
-    type: Literal["text"]
-    text: str
-    font_family: Optional[str] = "Arial"
-    font_size: Optional[int] = 16
-    font_weight: Optional[str] = "normal"  
-    text_align: Optional[Literal["left", "center", "right"]] = "left"
-    color: Optional[str] = "#000000"
+class AddWell(BaseModel):
+    number: str = Field(..., min_length=1)
+    depth: float
+    enterprise_id: int
+    status_id: int
 
-class ImageElement(BaseElement):
-    type: Literal["image"]
-    src: HttpUrl | str 
-    width: float
-    height: float
-    border_radius: Optional[float] = 0
-    fit: Optional[Literal["contain", "cover", "fill"]] = "contain"
+    @classmethod
+    def as_form(
+        cls,
+        number: str = Field(...),
+        depth: float = Field(...),
+        enterprise_id: int = Field(...),
+        status_id: int = Field(...),
+    ):
+        return cls(
+            number=number,
+            depth=depth,
+            enterprise_id=enterprise_id,
+            status_id=status_id,
+        )
 
-class FrameElement(BaseElement):
-    type: Literal["frame"]
-    width: float
-    height: float
-    background_color: Optional[str] = None
-    children: Optional[List[int]] = Field(default_factory=list, description="ID дочерних элементов")
 
-PageElement = Union[
-    RectangleElement,
-    EllipseElement,
-    LineElement,
-    TextElement,
-    ImageElement,
-    FrameElement
-]
-
-class PageCreate(BaseModel):
-    qr_id: int | None = None
-    name: str
-    background: dict = Field(default_factory=lambda: {"type": "color", "value": "#ffffff"})
-    elements: List[PageElement | None] = Field(default_factory=list)
-
-class PageUpdate(BaseModel):
-    qr_id: int | None = None
-    name: str | None = None
-    background: dict | None = None
-    elements: List[PageElement] | None = None
-
-class PageOut(BaseModel):
-    id: int
-    name: str
-    user_id: int
-    qr_id: int | None = None
-    background: dict
-    elements: List[PageElement | None] = None
-
-    class Config:
-        from_attributes = True
+class UpdateWell(BaseModel):
+    number: str | None = None
+    depth: float | None = None
+    enterprise_id: int | None = None
+    status_id: int | None = None

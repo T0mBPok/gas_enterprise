@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from src.classifiers.schemas import ClassifierRead
+from datetime import datetime
 
 
 class GetDeposit(BaseModel):
@@ -7,6 +8,7 @@ class GetDeposit(BaseModel):
     name: str
     region: ClassifierRead
     status: ClassifierRead
+    created_at: datetime
 
 
 class AddDeposit(BaseModel):

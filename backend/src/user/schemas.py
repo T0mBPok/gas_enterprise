@@ -21,3 +21,4 @@ class SUser(BaseModel):
     id: int
     email: EmailStr
     username: str
+    created_at: str

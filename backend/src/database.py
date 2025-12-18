@@ -1,4 +1,8 @@
+from datetime import datetime
 from typing import Annotated
+
+from sqlalchemy import DateTime, func
+from sqlalchemy.orm import Mapped
 from src.config import get_db_url
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncAttrs
 from sqlalchemy.orm import mapped_column, DeclarativeBase, declared_attr
@@ -15,10 +19,12 @@ def with_session(func):
 #Аннотации
 int_pk = Annotated[int, mapped_column(primary_key=True)]
 str_uniq = Annotated[str, mapped_column(unique=True, nullable=False)]
+created_at = Annotated[datetime, mapped_column(DateTime, server_default=func.now())]
 
 class Base(DeclarativeBase, AsyncAttrs):
     __abstract__ = True
-
+    created_at: Mapped[created_at]
+    
     @declared_attr.directive
     def __tablename__(cls) -> str:
         name = cls.__name__.lower()
