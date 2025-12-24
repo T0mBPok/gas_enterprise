@@ -1,14 +1,14 @@
 from sqlalchemy import select, exists
 from fastapi import HTTPException, status
 from src.database import with_session
-from src.enterprise.dao import EnterpriseDAO
+from src.employee.dao import EmployeeDAO
 
 
-class EnterpriseLogic(EnterpriseDAO):
+class EmployeeLogic(EmployeeDAO):
 
     @classmethod
     @with_session
-    async def update_enterprise(cls, session, id: int, **values):
+    async def update_employee(cls, session, id: int, **values):
         if not values:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -16,26 +16,26 @@ class EnterpriseLogic(EnterpriseDAO):
             )
 
         stmt = select(exists().where(cls.model.id == id))
-        enterprise_exists = await session.scalar(stmt)
+        exists_emp = await session.scalar(stmt)
 
-        if not enterprise_exists:
+        if not exists_emp:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Предприятие не найдено"
+                detail="Сотрудник не найден"
             )
 
         return await cls.update(id=id, **values)
 
     @classmethod
-    async def get_enterprise_by_id(cls, id: int):
-        enterprise = await cls.get_one_with_deposit(id)
-        if not enterprise:
+    async def get_employee_by_id(cls, id: int):
+        emp = await cls.get_one_with_relations(id)
+        if not emp:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Предприятие не найдено"
+                detail="Сотрудник не найден"
             )
-        return enterprise
+        return emp
 
     @classmethod
-    async def get_all_enterprises(cls, **filter_by):
-        return await cls.get_all_with_deposit(**filter_by)
+    async def get_all_employees(cls, **filter_by):
+        return await cls.get_all_with_relations(**filter_by)

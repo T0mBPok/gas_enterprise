@@ -19,11 +19,11 @@ def create_token(data: str):
 def get_pass_hashed(password: str):
     return pwd_context.hash(password)
 
-def verify_password(plain_pass: str, hashed_password: str):
-    return pwd_context.verify(plain_pass, hashed_password)
+def verify_password(plain_pass: str, password: str):
+    return pwd_context.verify(plain_pass, password)
 
 async def authenticate_user(email: EmailStr, password: str):
     user = await UserDAO.get_one_or_none(email=email)
-    if not user or verify_password(plain_pass=password, hashed_password=user.hashed_password) is False:
+    if not user or verify_password(plain_pass=password, password=user.password) is False:
         return None
     return user

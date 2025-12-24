@@ -1,28 +1,27 @@
-from src.deposit.dao import DepositDAO
 from src.dao.base import BaseDAO
-from src.enterprise.models import Enterprise
+from src.employee.models import Employee
+from src.enterprise.dao import EnterpriseDAO
+from src.classifiers.dao import ClassifierDAO
 
 
-class EnterpriseDAO(BaseDAO):
-    model = Enterprise
-    
-    @classmethod
-    async def get_one_with_deposit(cls, id: int):
-        enterprise = await cls.get_one_by_id(
-            id, "status", "type", "country", "city", "street", "house"
-        )
-        if enterprise and enterprise.deposit_id:
-            deposit = await DepositDAO.get_one_by_id(enterprise.deposit_id, "region", "status")
-            enterprise.deposit = deposit
-        return enterprise
+class EmployeeDAO(BaseDAO):
+    model = Employee
 
     @classmethod
-    async def get_all_with_deposit(cls, **filter_by):
-        enterprises = await cls.get_all(
-            "status", "type", "country", "city", "street", "house", **filter_by
-        )
-        for ent in enterprises:
-            if ent.deposit_id:
-                deposit = await DepositDAO.get_one_by_id(ent.deposit_id, "region", "status")
-                ent.deposit = deposit
-        return enterprises
+    async def get_one_with_relations(cls, id: int):
+        emp = await cls.get_one_by_id(id, "position", "qualification",)
+        
+        if emp.enterprise_id:
+            emp.enterprise = await EnterpriseDAO.get_one_with_deposit(emp.enterprise_id)
+
+        return emp
+
+    @classmethod
+    async def get_all_with_relations(cls, **filter_by):
+        employees = await cls.get_all("position", "qualification", **filter_by)
+
+        for emp in employees:
+            if emp.enterprise_id:
+                emp.enterprise = await EnterpriseDAO.get_one_with_deposit(emp.enterprise_id)
+
+        return employees

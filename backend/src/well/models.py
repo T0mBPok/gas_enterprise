@@ -1,7 +1,7 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.database import Base
-from src.Model3d.models import Model3D
+from src.model3d.models import Model3D
 from src.prodMetrics.models import ProdMetrics
 from src.classifiers.models import WellStatus
 

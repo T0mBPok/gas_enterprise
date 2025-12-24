@@ -29,6 +29,6 @@ class Enterprise(Base):
     street: Mapped["Street"] = relationship("Street")
     house: Mapped["House"] = relationship("House")
 
-    employees: Mapped[list[User]] = relationship("User", back_populates="enterprise")
+    employees: Mapped[list[User]] = relationship("Employee", back_populates="enterprise")
     wells: Mapped[list[Well]] = relationship("Well", back_populates="enterprise")
     deliveries: Mapped[list[Delivery]] = relationship("Delivery", back_populates="enterprise")

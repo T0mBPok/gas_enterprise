@@ -14,6 +14,10 @@ from src.well.router import router as well_router
 from src.order.router import router as order_router
 from src.prodMetrics.router import router as metrics_router
 from src.productionProcess.router import router as process_router
+from src.employee.router import router as employee_router
+from src.model3d.router import router as model_router
+from src.user.router import router as user_router
+#import schemas_registry
 
 app = FastAPI(title='Gas_enterprise')
 PORT = 9000
@@ -36,6 +40,9 @@ app.include_router(well_router)
 app.include_router(order_router)
 app.include_router(metrics_router)
 app.include_router(process_router)
+app.include_router(employee_router)
+app.include_router(model_router)
+app.include_router(user_router)
 
 
 @app.exception_handler(TokenExpiredException)

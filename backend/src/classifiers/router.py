@@ -1,12 +1,12 @@
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
 from .schemas import (
     ClassifierCreate,
     ClassifierRead,
     ClassifierUpdate
 )
 from .logic import ClassifierLogic
-
 from .models import *
+from src.user.dependencies import get_current_user
 
 router = APIRouter(prefix="/classifiers", tags=["Классификаторы"])
 
@@ -30,12 +30,12 @@ MODEL_MAP = {
 }
 
 @router.post("/{classifier}", summary="Добавить запись в классификатор", response_model=ClassifierRead)
-async def create_classifier_item(classifier: str, data: ClassifierCreate):
+async def create_classifier_item(classifier: str, data: ClassifierCreate, user: str = Depends(get_current_user)):
     model = MODEL_MAP[classifier]
     if not model:
         raise HTTPException(status_code=404, detail="Классификатор не найден")
     ClassifierLogic.model = model
-    return await ClassifierLogic.create(**data.model_dump())
+    return await ClassifierLogic.create(user=user, **data.model_dump())
 
 @router.get("", summary="Получить список доступных классификаторов")
 async def get_classifiers():
@@ -61,8 +61,13 @@ async def get_one(classifier: str, id: int = Path(..., gt=0)):
     return await ClassifierLogic.get_one_or_none_by_id(id=id)
 
 @router.put("/{classifier}/{id}", response_model=ClassifierUpdate)
-async def update(classifier: str, id: int = Path(..., gt=0), data: ClassifierUpdate = ...):
+async def update(classifier: str, id: int = Path(..., gt=0), data: ClassifierUpdate = ..., user: str = Depends(get_current_user)):
     ClassifierLogic.model = MODEL_MAP[classifier]
     values = data.model_dump(exclude_unset=True)
-    await ClassifierLogic.update_classifier(id=id, **values)
+    await ClassifierLogic.update_classifier(user=user, id=id, **values)
     return values
+
+@router.post("/{classifier}/{id}")
+async def delete(classifier: str, id: int = Path(..., gt=0), user: str = Depends(get_current_user)):
+    ClassifierLogic.model = MODEL_MAP[classifier]
+    return await ClassifierLogic.delete_classifier(user=user, id=id)
