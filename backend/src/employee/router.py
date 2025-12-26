@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Path
-from backend.src.user.dependencies import get_current_user
+from src.user.dependencies import get_current_user
 from src.employee.logic import EmployeeLogic
 from src.employee.rb import RBEmployee
 from src.employee.schemas import GetEmployee, AddEmployee, UpdateEmployee

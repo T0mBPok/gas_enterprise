@@ -1,3 +1,4 @@
+import mimetypes
 import os
 from fastapi import HTTPException, status
 from fastapi.responses import FileResponse
@@ -12,29 +13,34 @@ class Model3DLogic(Model3DDAO):
     
     @classmethod
     async def view_model(cls, model_id: int):
-        # Проверяем существование записи
         model = await cls.get_one_or_none_by_id(id=model_id)
         if not model:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Модель не найдена"
+                detail="Модель не найдена",
             )
 
         file_path = model.file_path
 
-        # Проверяем существование файла
         if not os.path.exists(file_path):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Файл модели отсутствует на сервере"
+                detail="Файл модели отсутствует на сервере",
             )
 
-        # Возвращаем PNG файл
+        # Определяем тип по расширению
+        mime_type, _ = mimetypes.guess_type(file_path)
+
+        # fallback, если не распозналось
+        if mime_type is None:
+            mime_type = "application/octet-stream"
+
+        # inline: браузер попробует открыть сам (например, плагином / viewer'ом)
         return FileResponse(
-            file_path,
-            media_type="image/png",
+            path=file_path,
+            media_type=mime_type,
             filename=os.path.basename(file_path),
-            headers={"Content-Disposition": "inline"}
+            headers={"Content-Disposition": "inline"},
         )
         
     @classmethod

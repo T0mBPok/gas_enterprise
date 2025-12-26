@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Path
-from backend.src.user.dependencies import get_current_user
+from src.user.dependencies import get_current_user
 from src.customer.logic import CustomerLogic
 from src.customer.rb import RBCustomer
 from src.customer.schemas import GetCustomer, AddCustomer, UpdateCustomer

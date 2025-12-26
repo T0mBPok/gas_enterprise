@@ -1,10 +1,31 @@
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from src.dao.base import BaseDAO
 from src.well.models import Well
 from src.enterprise.dao import EnterpriseDAO
+from src.database import with_session
 
 
 class WellDAO(BaseDAO):
     model = Well
+    
+    @classmethod
+    @with_session
+    async def add(cls, session, **data):
+        well = Well(**data)
+        session.add(well)
+        await session.flush()
+        await session.commit()
+
+        result = await session.execute(
+            select(Well)
+            .options(
+                selectinload(Well.enterprise),
+                selectinload(Well.status),
+            )
+            .where(Well.id == well.id)
+        )
+        return result.scalar_one()
 
     @classmethod
     async def get_one_with_enterprise(cls, id: int):

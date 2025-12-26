@@ -13,9 +13,9 @@ async def create_user(user_data: SUserCreateValidate, user: str = Depends(get_cu
     new_user = await UserLogic.create(user_data, user)
     return new_user
 
-@router.get('/me/', response_model=SUser)
-async def get_user(user: str = Depends(get_current_user)):
-    return user
+@router.get('/{id}', response_model=SUser)
+async def get_user(id: int = Path(..., gt=0), user: str = Depends(get_current_user)):
+    return await UserLogic.get_one_or_none_by_id(id=id)
 
 @router.get('/list/', response_model = list[SUser])
 async def get_user_list(user: str = Depends(get_current_user)):
@@ -34,7 +34,7 @@ async def auth_user(response: Response, user_data: SUserAuth) -> dict:
 
 @router.get("/check/")
 async def check_user(user: str = Depends(get_current_user)):
-    return {"ok": True, "user": {"id": user.id, "username": user.username, "email": user.email}}
+    return {"ok": True, "user": {"id": user.id, "username": user.username, "email": user.email, "role": user.role}}
 
 @router.post("/logout/")
 async def logout_user(response: Response):
@@ -47,7 +47,7 @@ async def logout_user(response: Response):
     )
     return response
 
-@router.post("/{id}", summary="Удалить пользователя")
+@router.delete("/{id}", summary="Удалить пользователя")
 async def delete_user(id: int = Path(..., gt=0), user: str = Depends(get_current_user)):
     return await UserLogic.delete_user(id, user)
 

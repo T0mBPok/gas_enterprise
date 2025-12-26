@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Path
-from backend.src.user.dependencies import get_current_user
+from src.user.dependencies import get_current_user
 from src.delivery.logic import DeliveryLogic
 from src.delivery.rb import RBDelivery
 from src.delivery.schemas import GetDelivery, AddDelivery, UpdateDelivery

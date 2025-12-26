@@ -15,7 +15,7 @@ async def view_model(model_id: int = Path(..., gt=0), user: str = Depends(get_cu
 
 @router.get("/download/{model_id}", summary="Скачать модель")
 async def download(model_id: int = Path(..., gt=0), user: str = Depends(get_current_user)):
-    return Model3DLogic.download_model(model_id)
+    return await Model3DLogic.download_model(model_id)
 
 @router.get("/", summary="Получить список всех 3D моделей", response_model=list[GetModel3D])
 async def get_all_models(user: str = Depends(get_current_user)):

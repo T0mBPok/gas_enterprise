@@ -1,3 +1,4 @@
+from fastapi import Form
 from pydantic import BaseModel, Field
 from datetime import date
 from src.classifiers.schemas import ClassifierRead
@@ -9,6 +10,8 @@ class GetWell(BaseModel):
     id: int
     number: str
     depth: float
+    enterprise_id: int
+    status_id: int
     enterprise: GetEnterprise
     status: ClassifierRead
     created_at: datetime
@@ -23,10 +26,10 @@ class AddWell(BaseModel):
     @classmethod
     def as_form(
         cls,
-        number: str = Field(...),
-        depth: float = Field(...),
-        enterprise_id: int = Field(...),
-        status_id: int = Field(...),
+        number: str = Form(...),
+        depth: float = Form(...),
+        enterprise_id: int = Form(...),
+        status_id: int = Form(...),
     ):
         return cls(
             number=number,
