@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 router = APIRouter(prefix='/user', tags=['Пользователь'])
 
-@router.post('/create/', response_model=SUser)
+@router.post('/', response_model=SUser)
 async def create_user(user_data: SUserCreateValidate, user: str = Depends(get_current_user)) -> dict:
     new_user = await UserLogic.create(user_data, user)
     return new_user
@@ -17,7 +17,7 @@ async def create_user(user_data: SUserCreateValidate, user: str = Depends(get_cu
 async def get_user(id: int = Path(..., gt=0), user: str = Depends(get_current_user)):
     return await UserLogic.get_one_or_none_by_id(id=id)
 
-@router.get('/list/', response_model = list[SUser])
+@router.get('/', response_model = list[SUser])
 async def get_user_list(user: str = Depends(get_current_user)):
     return await UserLogic.get_user_list(user)
 
@@ -51,6 +51,6 @@ async def logout_user(response: Response):
 async def delete_user(id: int = Path(..., gt=0), user: str = Depends(get_current_user)):
     return await UserLogic.delete_user(id, user)
 
-@router.put("/{id}", summary="Обновить пользователя")
+@router.put("/{id}", summary="Обновить пользователя", response_model=SUser)
 async def update_user(update_data: SUserUpdate, user: str = Depends(get_current_user), id: int = Path(..., gt=0)):
     return await UserLogic.update_user(id, user, **update_data.model_dump(exclude_unset=True))

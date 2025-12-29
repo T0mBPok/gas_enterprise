@@ -20,6 +20,7 @@ from src.productionProcess.models import ProductionProcess
 from src.user.models import User
 from src.well.models import Well
 from src.employee.models import Employee
+from src.file.model import File
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

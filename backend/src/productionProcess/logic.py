@@ -2,6 +2,8 @@ from sqlalchemy import select, exists
 from fastapi import HTTPException, status
 from src.database import with_session
 from src.productionProcess.dao import ProductionProcessDAO
+from src.services.email import send_email
+from src.user.logic import UserLogic
 
 
 class ProductionProcessLogic(ProductionProcessDAO):
@@ -15,16 +17,34 @@ class ProductionProcessLogic(ProductionProcessDAO):
                 detail="Нет полей для обновления"
             )
 
-        stmt = select(exists().where(cls.model.id == id))
-        exists_process = await session.scalar(stmt)
+        stmt = select(cls.model).where(cls.model.id == id)
+        process = await session.scalar(stmt)
 
-        if not exists_process:
+        if not process:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Процесс не найден"
             )
 
-        return await cls.update(id=id, **values)
+        # 1️⃣ обновляем процесс
+        updated = await cls.update(id=id, **values)
+
+        # 2️⃣ получаем email всех пользователей
+        emails = await UserLogic.get_all_emails()
+
+        # 3️⃣ отправляем уведомление
+        if emails:
+            send_email(
+                to=emails,
+                subject="Обновление производственного процесса",
+                body=(
+                    f"Производственный процесс был обновлён.\n\n"
+                    f"ID процесса: {id}\n"
+                    f"Изменённые поля: {', '.join(values.keys())}"
+                )
+            )
+
+        return updated
 
     @classmethod
     async def get_process_by_id(cls, id: int):

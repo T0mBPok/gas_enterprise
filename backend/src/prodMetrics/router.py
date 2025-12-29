@@ -18,7 +18,7 @@ async def get_metric_by_id(id: int = Path(..., gt=0), user: str = Depends(get_cu
 
 
 @router.post("/", summary="Добавить показатель", response_model=AddProdMetrics)
-async def add_metric(form_data: AddProdMetrics = Depends(), user: str = Depends(get_current_user)):
+async def add_metric(form_data: AddProdMetrics, user: str = Depends(get_current_user)):
     return await ProdMetricsLogic.add(**form_data.model_dump())
 
 

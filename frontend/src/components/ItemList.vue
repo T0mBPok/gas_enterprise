@@ -1,33 +1,33 @@
 <template>
   <div>
     <button
-      v-if="!isCreating && !editingWell"
+      v-if="!isCreating && !editingItem"
       @click="startCreating"
     >
-      Add well
+      Add item
     </button>
 
-   <ItemForm
+    <ItemForm
       v-if="isCreating"
-      :editableWell="{}"
-      @save="addWell"
+      :editableItem="{}"
+      @save="addItem"
       @cancel="cancelCreating"
     />
 
     <ItemForm
-      v-if="editingWell"
-      :editableWell="editingWell"
-      @save="updateWell"
+      v-if="editingItem"
+      :editableItem="editingItem"
+      @save="updateItem"
       @cancel="cancelEdit"
     />
 
-    <div v-if="!isCreating && !editingWell">
+    <div v-if="!isCreating && !editingItem">
       <ItemView
-        v-for="well in wells"
-        :key="well.id"
-        :entity="well"
+        v-for="item in items"
+        :key="item.id"
+        :entity="item"
         @edit="startEdit"
-        @delete="deleteWell"
+        @delete="deleteItem"
       />
     </div>
   </div>
@@ -36,75 +36,78 @@
 <script>
 import ItemView from './ItemView.vue'
 import ItemForm from './ItemForm.vue'
-import {
-  fetchWells,
-  createWell,
-  updateWell,
-  deleteWell,
-} from '../api.js'
+import { createEntityApi } from "../services/api.js";
+
+// создаем API объект для Items
+const entity = computed(() => route.params.entity)
+const itemsApi = createEntityApi(entity);
 
 export default {
   components: { ItemView, ItemForm },
 
   data() {
     return {
-      wells: [],
-      editingWell: null,
+      items: [],
+      editingItem: null,
       isCreating: false,
     }
   },
 
   created() {
-    fetchWells()
-      .then(res => {
-        this.wells = res.data
-      })
-      .catch(console.error)
+    this.fetchItems();
   },
 
   methods: {
+    fetchItems() {
+      itemsApi.fetchAll()
+        .then(res => {
+          this.items = res.data;
+        })
+        .catch(console.error);
+    },
+
     startCreating() {
-      this.isCreating = true
+      this.isCreating = true;
     },
 
     cancelCreating() {
-      this.isCreating = false
+      this.isCreating = false;
     },
 
-    addWell(payload) {
-      createWell(payload)
+    addItem(payload) {
+      itemsApi.create(payload)
         .then(res => {
-          this.wells.push(res.data)
-          this.isCreating = false
+          this.items.push(res.data);
+          this.isCreating = false;
         })
-        .catch(console.error)
+        .catch(console.error);
     },
 
-    updateWell(payload) {
-      updateWell({ ...payload, id: this.editingWell.id })
+    updateItem(payload) {
+      itemsApi.update({ ...payload, id: this.editingItem.id })
         .then(res => {
-          this.wells = this.wells.map(w =>
-            w.id === this.editingWell.id ? res.data : w
-          )
-          this.editingWell = null
+          this.items = this.items.map(w =>
+            w.id === this.editingItem.id ? res.data : w
+          );
+          this.editingItem = null;
         })
-        .catch(console.error)
+        .catch(console.error);
     },
 
-    deleteWell(id) {
-      deleteWell(id)
+    deleteItem(id) {
+      itemsApi.delete(id)
         .then(() => {
-          this.wells = this.wells.filter(w => w.id !== id)
+          this.items = this.items.filter(w => w.id !== id);
         })
-        .catch(console.error)
+        .catch(console.error);
     },
 
-    startEdit(well) {
-      this.editingWell = well
+    startEdit(item) {
+      this.editingItem = item;
     },
 
     cancelEdit() {
-      this.editingWell = null
+      this.editingItem = null;
     },
   },
 }

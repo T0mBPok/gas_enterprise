@@ -23,21 +23,6 @@ class AddWell(BaseModel):
     enterprise_id: int
     status_id: int
 
-    @classmethod
-    def as_form(
-        cls,
-        number: str = Form(...),
-        depth: float = Form(...),
-        enterprise_id: int = Form(...),
-        status_id: int = Form(...),
-    ):
-        return cls(
-            number=number,
-            depth=depth,
-            enterprise_id=enterprise_id,
-            status_id=status_id,
-        )
-
 
 class UpdateWell(BaseModel):
     number: str | None = None

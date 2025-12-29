@@ -16,7 +16,7 @@ async def get_well_by_id(id: int = Path(..., gt=0)):
     return await WellLogic.get_well_by_id(id=id)
 
 
-@router.post("/", summary="Добавить скважину")
+@router.post("/", summary="Добавить скважину", response_model=AddWell)
 async def add_well(form_data: AddWell):
     return await WellLogic.add(**form_data.model_dump())
 

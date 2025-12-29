@@ -18,7 +18,7 @@ async def get_customer_by_id(id: int = Path(..., gt=0), user: str = Depends(get_
 
 
 @router.post("/", summary="Добавить клиента", response_model=AddCustomer)
-async def add_customer(form_data: AddCustomer = Depends(), user: str = Depends(get_current_user)):
+async def add_customer(form_data: AddCustomer, user: str = Depends(get_current_user)):
     return await CustomerLogic.add(**form_data.model_dump())
 
 

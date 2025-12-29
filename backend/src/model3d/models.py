@@ -7,5 +7,5 @@ class Model3D(Base):
     file_path: Mapped[str]
     format: Mapped[str]
 
-    well_id: Mapped[int] = mapped_column(ForeignKey("wells.id"))
+    well_id: Mapped[int] = mapped_column(ForeignKey("wells.id"), unique=False)
     well = relationship("Well", back_populates="models")

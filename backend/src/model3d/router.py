@@ -9,7 +9,7 @@ router = APIRouter(prefix="/models", tags=['3D Модели'])
 async def generate(well_id: int, params: ModelParams = default_model_params, user: str = Depends(get_current_user)):
     return await Model3DLogic.generate_and_save(well_id, params)
 
-@router.get("/view/{model_id}", summary="Просмотр PNG 3D модели")
+@router.get("/view/{model_id}", summary="Просмотр 3D модели")
 async def view_model(model_id: int = Path(..., gt=0), user: str = Depends(get_current_user)):
     return await Model3DLogic.view_model(model_id)
 
@@ -27,4 +27,4 @@ async def get_model_by_id(model_id: int = Path(..., gt=0), user: str = Depends(g
 
 @router.delete("/{model_id}", summary="Удалить 3D модель")
 async def delete_model(model_id: int = Path(..., gt=0), user: str = Depends(get_current_user)):
-    return await Model3DLogic.delete_model(model_id)
+    return await Model3DLogic.delete_model(id=model_id)

@@ -18,7 +18,7 @@ async def get_enterprise_by_id(id: int = Path(..., gt=0), user: str = Depends(ge
 
 
 @router.post("/", summary="Добавить предприятие", response_model=AddEnterprise)
-async def add_enterprise(form_data: AddEnterprise = Depends(), user: str = Depends(get_current_user)):
+async def add_enterprise(form_data: AddEnterprise, user: str = Depends(get_current_user)):
     return await EnterpriseLogic.add(**form_data.model_dump())
 
 

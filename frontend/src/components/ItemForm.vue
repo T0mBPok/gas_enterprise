@@ -1,141 +1,110 @@
 <template>
-  <form @submit.prevent="submitForm">
-    <div v-for="field in visibleFields" :key="field.key" class="field-wrapper">
-      <label>{{ field.label }}:</label>
-      
+  <form @submit.prevent="submit">
+    <div
+      v-for="(field, key) in fields"
+      :key="key"
+      class="form-field"
+    >
+      <label>{{ field.label }}</label>
+
       <input
-        v-if="field.type === 'lookup'"
-        type="number"
-        v-model.number="editableFields[field.key].id"
+        v-if="field.type === 'string'"
+        v-model="form[key]"
+        type="text"
       />
-      
+
       <input
         v-else-if="field.type === 'number'"
+        v-model.number="form[key]"
         type="number"
-        v-model.number="editableFields[field.key]"
       />
-      
+
       <input
-        v-else
-        type="text"
-        v-model="editableFields[field.key]"
+        v-else-if="field.type === 'date'"
+        v-model="form[key]"
+        type="date"
       />
+
+      <input
+        v-else-if="field.type === 'password'"
+        v-model="form[key]"
+        type="password"
+      />
+
+      <select
+        v-else-if="field.type === 'classifier' || field.type === 'entity'"
+        v-model="form[key]"
+      >
+        <option :value="null">—</option>
+        <option
+          v-for="opt in options[key]"
+          :key="opt.id"
+          :value="opt.id"
+        >
+          {{ opt.name || opt.number || opt.title  }}
+        </option>
+      </select>
     </div>
 
-    <button type="submit">{{ hasId ? 'Save' : 'Add' }}</button>
-    <button type="button" @click="$emit('cancel')">Cancel</button>
+    <button type="submit">Сохранить</button>
+    <button type="button" @click="$emit('cancel')">Отмена</button>
   </form>
 </template>
 
 <script>
+import { entityFormConfig } from '@/config/entityFormConfig'
+import { createEntityApi } from '@/services/api'
+
 export default {
   props: {
-    editableWell: { type: Object, default: () => ({}) },
+    editableItem: { type: Object, required: true },
   },
 
   data() {
-    const base = {
-      number: '',
-      depth: 0,
-      enterprise: { id: null },
-      status: { id: null },
-    };
-
     return {
-      editableFields: {
-        ...base,
-        ...JSON.parse(JSON.stringify(this.editableWell)),
-      },
-    };
-  },
-
-  computed: {
-    hasId() {
-      return !!this.editableFields.id;
-    },
-
-    visibleFields() {
-      const fields = [];
-
-      const defaultFields = this.editableWell.id ? this.editableFields : {
-        number: '',
-        depth: 0,
-        enterprise: { id: null },
-        status: { id: null }
-      };
-      
-      Object.entries(defaultFields).forEach(([key, value]) => {
-        if (key === 'id') {
-          return;
-        }
-
-        let type = 'string';
-        let displayValue = value;
-
-        if (value && typeof value === 'object' && 'id' in value) {
-          type = 'lookup';
-          displayValue = value.id;
-        } else if (typeof value === 'number') {
-          type = 'number';
-        }
-
-        fields.push({
-          key,
-          label: this.formatKey(key),
-          value: displayValue,
-          type
-        });
-      });
-
-      return fields;
+      form: {},
+      fields: {},
+      options: {},
     }
   },
 
-  watch: {
-    editableWell(newVal) {
-      const base = {
-        number: '',
-        depth: 0,
-        enterprise: { id: null },
-        status: { id: null },
-      };
-
-      this.editableFields = {
-        ...base,
-        ...JSON.parse(JSON.stringify(newVal)),
-      };
+  computed: {
+    formKey() {
+       if (this.$route.params.classifier) {
+        return 'classifiers'
+      }
+      return this.$route.params.entity
     },
+  },
+
+  async created() {
+    const config = entityFormConfig[this.formKey]
+    this.fields = config.fields
+
+    this.form = { ...this.editableItem }
+
+    for (const [key, field] of Object.entries(this.fields)) {
+      if (field.type === 'classifier') {
+        const api = createEntityApi('classifiers', field.classifier)
+        const res = await api.fetchAll()
+        this.options[key] = res.data
+      }
+
+      if (field.type === 'entity') {
+        const api = createEntityApi(field.entity)
+        const res = await api.fetchAll()
+        this.options[key] = res.data
+      }
+    }
   },
 
   methods: {
-    formatKey(key) {
-      if (!key) return '';
-      return key
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, str => str.toUpperCase())
-        .replace(/_/g, ' ')
-        .trim();
-    },
-
-    submitForm() {
-      const payload = {};
-      
-      Object.entries(this.editableFields).forEach(([key, value]) => {
-        if (key === 'id' || key === 'created_at' || key === 'updated_at') {
-          return;
-        }
-
-        if (value && typeof value === 'object' && 'id' in value) {
-          payload[`${key}_id`] = value.id;
-        } else {
-          payload[key] = value;
-        }
-      });
-
-      this.$emit('save', payload);
+    submit() {
+      console.log('Отправляемые данные:', this.form)
+      this.$emit('save', this.form)
     },
   },
-};
+}
 </script>
 
 

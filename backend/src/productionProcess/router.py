@@ -18,7 +18,7 @@ async def get_process_by_id(id: int = Path(..., gt=0), user: str = Depends(get_c
 
 
 @router.post("/", summary="Добавить процесс", response_model=AddProductionProcess)
-async def add_process(form_data: AddProductionProcess = Depends(), user: str = Depends(get_current_user)):
+async def add_process(form_data: AddProductionProcess, user: str = Depends(get_current_user)):
     return await ProductionProcessLogic.add(**form_data.model_dump())
 
 

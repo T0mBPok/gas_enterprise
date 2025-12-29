@@ -29,32 +29,6 @@ class AddEnterprise(BaseModel):
     street_id: int
     house_id: int
 
-    @classmethod
-    def as_form(
-        cls,
-        name: str = Field(...),
-        contacts: str | None = None,
-        status_id: int = Field(...),
-        type_id: int = Field(...),
-        deposit_id: int = Field(...),
-        country_id: int = Field(...),
-        city_id: int = Field(...),
-        street_id: int = Field(...),
-        house_id: int = Field(...),
-    ):
-        return cls(
-            name=name,
-            contacts=contacts,
-            status_id=status_id,
-            type_id=type_id,
-            deposit_id=deposit_id,
-            country_id=country_id,
-            city_id=city_id,
-            street_id=street_id,
-            house_id=house_id,
-        )
-
-
 class UpdateEnterprise(BaseModel):
     name: str | None = Field(None, min_length=2)
     contacts: str | None = None

@@ -17,6 +17,7 @@ from src.productionProcess.router import router as process_router
 from src.employee.router import router as employee_router
 from src.model3d.router import router as model_router
 from src.user.router import router as user_router
+from src.file.router import router as file_router
 #import schemas_registry
 
 app = FastAPI(title='Gas_enterprise')
@@ -43,6 +44,7 @@ app.include_router(process_router)
 app.include_router(employee_router)
 app.include_router(model_router)
 app.include_router(user_router)
+app.include_router(file_router)
 
 
 @app.exception_handler(TokenExpiredException)

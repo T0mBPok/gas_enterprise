@@ -3,12 +3,12 @@ import os
 from fastapi import HTTPException, status
 from fastapi.responses import FileResponse
 from src.model3d.dao import Model3DDAO
-from src.services.generate_3d_mesh import save_3d_model_stl
+from src.services.generate_3d_mesh import save_3d_model_gltf
 
 class Model3DLogic(Model3DDAO):
     @classmethod
     async def generate_and_save(cls, well_id: int, params: str):
-        path = save_3d_model_stl(params.model_dump())
+        path = save_3d_model_gltf(params.model_dump())
         return await cls.add(file_path=path, format="stl", well_id=well_id)
     
     @classmethod
@@ -28,20 +28,12 @@ class Model3DLogic(Model3DDAO):
                 detail="Файл модели отсутствует на сервере",
             )
 
-        # Определяем тип по расширению
-        mime_type, _ = mimetypes.guess_type(file_path)
-
-        # fallback, если не распозналось
-        if mime_type is None:
-            mime_type = "application/octet-stream"
-
-        # inline: браузер попробует открыть сам (например, плагином / viewer'ом)
         return FileResponse(
-            path=file_path,
-            media_type=mime_type,
-            filename=os.path.basename(file_path),
+            path=model.file_path,
+            media_type="model/gltf+json",
             headers={"Content-Disposition": "inline"},
         )
+
         
     @classmethod
     async def download_model(cls, model_id: int):
@@ -70,12 +62,12 @@ class Model3DLogic(Model3DDAO):
         return model
 
     @classmethod
-    async def delete_model(cls, model_id: int):
-        model = await cls.get_one_or_none_by_id(model_id)
+    async def delete_model(cls, id: int):
+        model = await cls.get_one_or_none_by_id(id=id)
         if not model:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"3D модель с id={model_id} не найдена"
+                detail=f"3D модель с id={id} не найдена"
             )
 
         # удаляем файл с диска
@@ -84,5 +76,5 @@ class Model3DLogic(Model3DDAO):
             os.remove(file_path)
 
         # удаляем запись из БД
-        await cls.delete(model_id)
-        return {"message": f"3D модель с id={model_id} удалена"}
+        await cls.delete(id=id)
+        return {"message": f"3D модель с id={id} удалена"}

@@ -47,3 +47,8 @@ class UserLogic(UserDAO):
         if 'password' in update_data.keys():
             update_data["password"] = get_pass_hashed(update_data["password"])
         return await cls.update(id=user_id, **update_data)
+    
+    @classmethod
+    async def get_all_emails(cls) -> list[str]:
+        users = await cls.get_all()
+        return [u.email for u in users if u.email]

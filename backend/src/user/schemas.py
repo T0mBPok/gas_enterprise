@@ -29,3 +29,4 @@ class SUserUpdate(BaseModel):
     email: EmailStr | None = None
     username: str | None = None
     password: str | None = None
+    role: str | None = None

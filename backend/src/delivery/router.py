@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
 from src.user.dependencies import get_current_user
 from src.delivery.logic import DeliveryLogic
 from src.delivery.rb import RBDelivery
 from src.delivery.schemas import GetDelivery, AddDelivery, UpdateDelivery
+from src.services.export_deliveries_pdf import export_deliveries_pdf
+from src.services.export_deliveries_xlsx import export_deliveries_xlsx
 
 router = APIRouter(prefix="/delivery", tags=["Доставки"])
 
@@ -11,6 +13,19 @@ router = APIRouter(prefix="/delivery", tags=["Доставки"])
 async def get_deliveries(filters: RBDelivery = Depends(), user: str = Depends(get_current_user)):
     return await DeliveryLogic.get_all_deliveries(**filters.to_dict())
 
+@router.get("/export")
+async def export_deliveries(
+    format: str,
+    user: str = Depends(get_current_user)
+):
+    deliveries = await DeliveryLogic.get_all_deliveries()
+
+    if format == "xlsx":
+        return export_deliveries_xlsx(deliveries)
+    elif format == "pdf":
+        return export_deliveries_pdf(deliveries)
+    else:
+        raise HTTPException(400, "Unsupported format")
 
 @router.get("/{id}", summary="Получить доставку по id", response_model=GetDelivery)
 async def get_delivery_by_id(id: int = Path(..., gt=0), user: str = Depends(get_current_user)):
@@ -18,7 +33,7 @@ async def get_delivery_by_id(id: int = Path(..., gt=0), user: str = Depends(get_
 
 
 @router.post("/", summary="Добавить доставку", response_model=AddDelivery)
-async def add_delivery(form_data: AddDelivery = Depends(), user: str = Depends(get_current_user)):
+async def add_delivery(form_data: AddDelivery, user: str = Depends(get_current_user)):
     return await DeliveryLogic.add(**form_data.model_dump())
 
 

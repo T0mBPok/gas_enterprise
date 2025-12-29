@@ -18,7 +18,7 @@ async def get_employee_by_id(id: int = Path(..., gt=0), user: str = Depends(get_
 
 
 @router.post("/", summary="Добавить сотрудника", response_model=AddEmployee)
-async def add_employee(form_data: AddEmployee = Depends(), user: str = Depends(get_current_user)):
+async def add_employee(form_data: AddEmployee, user: str = Depends(get_current_user)):
     return await EmployeeLogic.add(**form_data.model_dump())
 
 

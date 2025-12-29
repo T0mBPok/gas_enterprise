@@ -18,7 +18,7 @@ async def get_deposit_by_id(id: int = Path(..., gt=0), user: str = Depends(get_c
 
 
 @router.post("/", summary="Добавить месторождение", response_model=AddDeposit)
-async def add_deposit(form_data: AddDeposit = Depends(), user: str = Depends(get_current_user)):
+async def add_deposit(form_data: AddDeposit, user: str = Depends(get_current_user)):
     return await DepositLogic.add(**form_data.model_dump())
 
 
